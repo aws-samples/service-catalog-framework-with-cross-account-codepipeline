@@ -1,0 +1,2 @@
+Repository=service-catalog-codepipeline
+Role=cbd-service-catalog-codepipeline-main-us-east-1

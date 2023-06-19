@@ -1,0 +1,136 @@
+# (c) 2022 Amazon Web Services, Inc. or its affiliates. All Rights Reserved. This AWS Content is provided subject to the terms of the AWS Customer  
+# Agreement available at https://aws.amazon.com/agreement/ or other written agreement between Customer and Amazon Web Services, Inc. 
+# TODO:
+# Support Organization
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a Service Catalog portfolio and related resources'
+
+
+Parameters:
+  PortfolioType:
+    Description:    Please specify the type of the portfolio (Administrator, User, etc)
+    Type:           String
+    Default:        "End User"
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+
+  PortfolioProviderName:
+    Description:    Please specify the Portfolio Provider Name.
+    Type:           String
+    AllowedPattern: ".+"
+    Default: "AWS Samples"
+    ConstraintDescription: "This is a required parameter"
+
+  PortfolioDescription:
+    Description:    Please specify the Portfolio Description.
+    Type:           String
+    AllowedPattern: ".+"
+    Default: "CodePipeline examples"
+    ConstraintDescription: "This is a required parameter"
+
+  PortfolioDisplayName:
+    Description:    Please specify the Portfolio Description. 
+    Type:           String
+    AllowedPattern: ".+"
+    Default: "A Collection of AWS CodePipeline products"
+
+    ConstraintDescription: "This is a required parameter"
+  
+  Nonce:
+    Type: String
+    Description: Forces custom resources to run everytime CF runs -- pass in a $RANDOM as a parameter
+
+
+    ConstraintDescription: "This is a required parameter"
+
+
+
+Metadata:
+
+  cfn-lint:
+    config:
+        ignore_checks:
+          # Parameter is used with ReplicateWith
+          - W2001 
+          # ReplicateWith is used by a Macro
+          - E3002
+          # PrincipalARN is created by the Macro
+          - E3003
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - 
+        Label:
+          default: "Service Portfolio Parameters"
+        Parameters:
+          - PortfolioType
+          - PortfolioProviderName
+          - PortfolioDescription
+          - PortfolioDisplayName
+
+
+
+Resources:
+
+  ServiceCatalogCloudFormationRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - 'sts:AssumeRole'
+              Effect: Allow
+              Principal:
+                Service:
+                  - servicecatalog.amazonaws.com
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+          - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+          - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+          - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+          - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+          - arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess
+        Policies:
+          - PolicyName: IAMPolicy
+            PolicyDocument:
+              Statement:
+                - Action:
+                    - iam:PassRole
+                    - iam:CreateRole
+                    - iam:PutRolePolicy
+                    - iam:DeleteRole
+                    - iam:DeleteRolePolicy
+                    - iam:AttachRolePolicy
+                    - iam:DetachRolePolicy
+                  Effect: Allow
+                  Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+          # - PolicyName: SSMPolicy
+          #   PolicyDocument:
+          #     Statement:
+          #       - Action:
+          #           - ssm:GetPolicy
+          #         Effect: Allow
+          #         Resource: "*"
+  AttachRolesByPolicy:
+    Type: Custom::AttachRolesByPolicy
+    Properties:
+      ServiceToken: !ImportValue CFNAttachRolesToPortfolio
+      PolicyNames: 
+        - AWSServiceCatalogEndUserFullAccess
+        - AWSServiceCatalogAdminFullAccess
+      PortfolioId: !Ref ServiceCatalogPortfolio
+      Nonce: !Ref Nonce
+  ServiceCatalogPortfolio:
+    Type: "AWS::ServiceCatalog::Portfolio"
+    Properties:
+      ProviderName: !Ref 'PortfolioProviderName'
+      Description: !Ref 'PortfolioDescription'
+      DisplayName: !Ref 'PortfolioDisplayName'
+Outputs:
+  ServiceCatalogPortfolio:
+     Description: Service Catalog Portfolio ID
+     Value: !Ref ServiceCatalogPortfolio
+  ServiceCatalogCloudFormationRole:
+     Description: Service Catalog Portfolio ID
+     Value: !Ref ServiceCatalogCloudFormationRole

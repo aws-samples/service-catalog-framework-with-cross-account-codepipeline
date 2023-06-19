@@ -1,0 +1,103 @@
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: Resources will have the ApplicationName appended to them
+    MinLength: 1
+
+  EC2TagKey:
+    Type: String
+    Description: The key of the EC2 tag for the deployment group
+    MinLength: 1
+
+  EC2TagValue:
+    Type: String
+    Description: The key of the EC2 tag for the deployment group
+    MinLength: 1
+
+Resources:
+  CodeDeployApplication: 
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Ref ApplicationName
+      ComputePlatform: Server
+  
+  CodeDeployDeploymentConfig:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties:
+      DeploymentConfigName: !Sub "${ApplicationName}-config"
+      ComputePlatform: Server
+      MinimumHealthyHosts: 
+        Type: HOST_COUNT
+        Value: 1
+  
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      DeploymentGroupName: !Sub "${ApplicationName}-DeploymentGroup"
+      ApplicationName: !Ref CodeDeployApplication
+      AutoRollbackConfiguration: 
+        Enabled: True
+        Events: 
+          - DEPLOYMENT_FAILURE
+          - DEPLOYMENT_STOP_ON_ALARM
+          - DEPLOYMENT_STOP_ON_REQUEST
+      Ec2TagSet:
+        Ec2TagSetList:
+          - Ec2TagGroup:
+            - Key: !Ref EC2TagKey
+              Type: KEY_AND_VALUE
+              Value: !Ref EC2TagValue       
+      ServiceRoleArn: !GetAtt CodeDeployServiceRole.Arn
+
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "codedeploy-service-role-${ApplicationName}-${AWS::Region}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+
+
+  CodeBuildPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "codedeploy-service-policy-${ApplicationName}-${AWS::Region}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -  
+            Effect: Allow
+            Action:
+              - iam:PassRole
+              - ec2:RunInstance
+              - ec2:CreateTag
+              - ec2:DescribeInstance
+            Resource:  "*"
+          - 
+            Effect: Allow
+            Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                - s3:GetBucketVersioning
+                - s3:ListBucket
+                - s3:PutObject
+                - s3:PutObjectAcl
+            Resource: "*"        
+      Roles:
+        -
+          !Ref CodeDeployServiceRole
+Outputs:
+  CodeDeployApplication:
+    Value: !Ref CodeDeployApplication
+  CodeDeployDeploymentGroup:
+    Value: !Ref CodeDeployDeploymentGroup
+

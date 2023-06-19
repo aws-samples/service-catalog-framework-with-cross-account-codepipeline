@@ -1,0 +1,7 @@
+**/samconfig.toml
+**/*tmp
+*/artifacts.zip
+**/.aws-sam/*
+.DS_Store
+components/lambdas/warnings.txt
+**/template.yaml

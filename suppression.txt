@@ -1,0 +1,9 @@
+RulesToSuppress:
+- id: W92
+  reason: ReservedConcurrentExecutions not required
+- id: W32
+  reason: No sensitive information in CodeBuild job
+- id: W89
+  reason: Lambda function does not need to be in a VPC
+- id: W28
+  reason: Having explicit names is not a security violation

@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cross Account CodePipeline Service Catalog Product
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Repository:
+    Type: String
+    Description: Name of the CodeCommit repository that stores the application code.
+  TargetAccount:
+    Type: String
+    Description: The destination account
+  Branch:
+    Type: String
+    Description: Name of the branch that contains the application code.
+    Default: main
+    AllowedPattern: "^[a-zA-Z0-9_-]+$"
+    ConstraintDescription: "Branch name can only contain alphanumeric characters, dash, and underscore."
+  IntegrationBuildSpec:
+    Type: String
+    Description: Build specification file for the integration build stage.
+    Default: buildspec-integration.yaml
+  DeploymentBuildSpec:
+    Type: String
+    Description: Build specification file
+    Default: buildspec.yaml
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Source
+      Parameters:
+      - Repository
+      - Branch
+      - IntegrationBuildSpec
+      - DeploymentBuildSpec 
+    - Label:
+        default: Target
+      Parameters:
+      - TargetAccount
+Resources:
+  CodeBuildIntegrationProject:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Repository: !Ref Repository
+        Branch: !Ref Branch
+        BuildSpec: !Ref IntegrationBuildSpec
+        BuildProjectRole: !ImportValue  codebuild-role
+        Stage: Integration
+        TargetAccount: !Ref TargetAccount
+      TemplateURL: ./codebuild-project.yml
+      TimeoutInMinutes: '60'
+
+  CodeBuildDeploymentProject:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Repository: !Ref Repository
+        Branch: !Ref Branch
+        BuildSpec: !Ref DeploymentBuildSpec
+        BuildProjectRole: !ImportValue  codebuild-role
+        TargetAccount: !Ref TargetAccount
+        Stage: Build
+      TemplateURL: ./codebuild-project.yml
+      TimeoutInMinutes: '60'
+
+  CodeBuildCloudWatchEvent:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Repository: !Ref Repository
+        Branch: !Ref Branch
+        PipelineName: !Ref Pipeline
+      TemplateURL: ./codecommit-event.yml
+      TimeoutInMinutes: '60'
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !ImportValue x-acct-codepipeline-role
+      Name: !Sub "x-acct-${Repository}-${Branch}"
+      ArtifactStore:
+        Type: S3
+        Location: !ImportValue x-acct-codepipeline-source-bucket
+      Stages:
+        - Name: GetSource
+          Actions:
+            - Name: GetSourceCode
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              Configuration:
+                RepositoryName: !Ref Repository
+                BranchName: !Ref Branch
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SCCheckoutArtifact
+              RunOrder: 1
+        -
+          Name: Integration
+          Actions:
+          -
+            Name: Build
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            Configuration:
+              ProjectName: !GetAtt CodeBuildIntegrationProject.Outputs.BuildProject
+            RunOrder: 1
+            InputArtifacts:
+              - Name: SCCheckoutArtifact
+            OutputArtifacts:
+              - Name: IntegrationArtifacts
+        - 
+          Actions:
+            - ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: '1'
+              Configuration:
+                NotificationArn: !ImportValue x-acct-codepipeline-approval-topic
+              InputArtifacts: []
+              Name: TestApproval
+              RunOrder: 1
+          Name: DeploymentApproval
+        -
+          Name: Deployment
+          Actions:
+          -
+            Name: Build
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            Configuration:
+              ProjectName: !GetAtt CodeBuildDeploymentProject.Outputs.BuildProject
+            RunOrder: 1
+            InputArtifacts:
+              - Name: IntegrationArtifacts
+            OutputArtifacts:
+              - Name: BuildOutput

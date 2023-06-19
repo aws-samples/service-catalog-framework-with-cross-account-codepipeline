@@ -1,0 +1,132 @@
+Resources:
+  CodePipelinePolicy:
+    Type: AWS::IAM::Policy
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: F39
+                  reason: "IAM policy should not allow * resource with PassRole action (TODO: Do we need PassRole?)"
+                - id: F4
+                  reason: "IAM policy should not allow * action (TODO: Is this a valid error)"
+                - id: W12
+                  reason: This policy needs to be able to create a Role for Lambdas with the needed policies.
+
+    Properties:
+      PolicyName: !Sub x-acct-codepipeline-policy-${AWS::Region}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - "codepipeline:*"
+              - iam:ListRoles
+              - "cloudformation:Describe*"
+              - "cloudFormation:List*"
+              - "codecommit:List*"
+              - "codecommit:Get*"
+              - codecommit:GitPull
+              - codecommit:UploadArchive
+              - codecommit:CancelUploadArchive
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - cloudformation:CreateStack
+              - cloudformation:DeleteStack
+              - cloudformation:DescribeStacks
+              - cloudformation:UpdateStack
+              - cloudformation:CreateChangeSet
+              - cloudformation:DeleteChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:SetStackPolicy
+              - cloudformation:ValidateTemplate
+              - iam:PassRole
+              - s3:ListAllMyBuckets
+              - s3:GetBucketLocation
+            Resource:
+              - "*"
+          - 
+            Effect: Allow
+            Action: 
+              - sns:Publish
+            Resource:
+              - !GetAtt NotificationTopic.TopicArn
+          - 
+            Effect: Allow
+            Action: 
+              - s3:PutObject
+              - s3:GetObject
+            Resource: !Join 
+                -  ''
+                - - 'arn:aws:s3:::'
+                  - !ImportValue x-acct-codepipeline-source-bucket
+                  - "/*"
+          - 
+            Effect: Allow
+            Action: 
+              - s3:PutObject
+              - s3:GetObject
+            Resource: !Join 
+                -  ''
+                - - 'arn:aws:s3:::'
+                  - 'aws-sam-cli-managed-default-samclisourcebucket*'
+                  - '/*'
+          - 
+            Effect: Allow
+            Action: 
+              - s3:"*"
+            Resource: !Join 
+                -  ''
+                - - 'arn:aws:s3:::'
+                  - !ImportValue x-acct-codepipeline-source-bucket
+          - 
+            Effect: Allow
+            Action: 
+              - s3:"*"
+            Resource: !Join 
+                -  ''
+                - - 'arn:aws:s3:::'
+                  - !ImportValue x-acct-codepipeline-source-bucket
+                  - /*
+          - 
+            Effect: Allow
+            Action: 
+              - "s3:*"
+            Resource: 'arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucke*'
+      Roles:
+        -
+          !Ref CodePipelineRole
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: W47
+                  reason: "SNS Topic should specify KmsMasterKeyId property - No sensitive information is sent to this topic"
+    Properties: 
+      DisplayName: x-acct-codepipeline-approval-topic
+
+Outputs:
+  CodePipelineRoleArn:
+    Value: !GetAtt CodePipelineRole.Arn
+    Export:
+      Name: x-acct-codepipeline-role
+  SnsTopicArn:
+    Value: !GetAtt  NotificationTopic.TopicArn
+    Export:
+      Name: x-acct-codepipeline-approval-topic

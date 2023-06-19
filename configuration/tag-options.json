@@ -1,0 +1,47 @@
+{
+    "ParameterGroupSortOrder": [
+        "Source",
+        "Build Parameters",
+        "Target Environment",
+        "Build Environment Variables",
+        "Tags"
+    ],
+    "DefaultParameterGroup": "Tags",
+    "Configuration": [
+
+        {
+            "Key": "EnvironmentRepository",
+            "Value": "${EnvironmentRepository}",
+            "Default": "ACME Corp"
+        },
+        {
+            "Key": "Application",
+            "Value": "${Application}",
+            "Default": "AAAA",
+            "Description": "The name of the application"
+        },
+        {
+            "Key": "Owner",
+            "Value": "${Application}",
+            "Default": "BBBB",
+            "Description": "The owner of the product (Free Text)",
+            "CreateTagOption":false
+        },
+        {
+            "Key": "CostCenter",
+            "Value": "${CostCenter}",
+            "Default": "001"
+        },
+        {
+            "Key": "Environment",
+            "Value": "${Environment}",
+            "Default": "DEV",
+            "AllowedValues": [
+                "DEV",
+                "QA",
+                "UAT",
+                "PROD"
+            ]
+        }
+    ]
+}

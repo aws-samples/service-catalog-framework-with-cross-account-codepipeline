@@ -1,0 +1,67 @@
+Parameters:
+  Repository:
+    Type: String
+    Description: Name of the Repository
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  Branch:
+    Type: String
+    Description: The git branch that should trigger the repository
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  PipelineName:
+    Type: String
+    Description: The name of the target CodePipeline
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        -
+          PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', "*"] ] 
+
+  AmazonCloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !Join [ '', [ 'arn:aws:codecommit:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref Repository ] ]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - !Ref Branch
+      Targets:
+        -
+          Arn: 
+            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref PipelineName ] ]
+          RoleArn: !GetAtt Role.Arn
+          Id: !Sub "codepipeline-${Repository}-${Branch}"
+

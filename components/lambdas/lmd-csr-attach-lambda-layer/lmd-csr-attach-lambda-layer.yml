@@ -1,0 +1,71 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Used to attach the latest version of a layer to a Lambda
+
+
+
+Resources:
+  AttachLambdaLayerCustomResource:
+    Type: AWS::Serverless::Function
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: W11
+                  reason: This function needs to be able to work with any Lambda
+                - id: W58
+                  reason: AWSLambdaBasicExecutionRole gives permission to CloudWatch Logs
+    Properties:
+      FunctionName: cfn-attach-lambda-layer
+      CodeUri: ./src
+      Handler: index.handler
+      Runtime: python3.7
+      Timeout: 60
+      Role: !GetAtt AttachLambdaLayeCustomResourceRole.Arn
+
+
+  AttachLambdaLayeCustomResourceRole:
+    Type: AWS::IAM::Role
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: W11
+                  reason: This function needs to be able to work with any Lambda
+                - id: W58
+                  reason: AWSLambdaBasicExecutionRole gives permission to CloudWatch Logs
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName:
+          Fn::Sub: updater-lambda-configuration-policy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:GetFunction
+            - lambda:GetFunctionConfiguration
+            - lambda:UpdateFunctionConfiguration
+            - lambda:GetLayerVersion
+            - lambda:ListLayerVersions
+            - logs:DescribeLogGroups
+            - logs:CreateLogGroup
+            Resource: "*"
+
+Outputs:
+  CFNAttachLambdaLayer:
+    Value: !GetAtt  AttachLambdaLayerCustomResource.Arn
+    Export:
+      Name: CFNAttachLambdaLayer

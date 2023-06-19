@@ -1,0 +1,56 @@
+Transform: AWS::Serverless-2016-10-31
+Description: > 
+  Creates a CloudFormation Custom Resource that forces CloudFormation to wait for a number of seconds
+
+Parameters:
+  Nonce:
+    Type: String
+    Description: Forces custom resource to run everytime CF runs -- pass in a $RANDOM as a parameter
+
+Globals:
+  Function:
+    Runtime: python3.7
+    Timeout: 180
+    Handler: index.lambda_handler
+
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: W11
+                  reason: This function needs to **ReadOnly** access to list the policies for all of the roles
+                - id: W58
+                  reason: AWSLambdaBasicExecutionRole gives permission to CloudWatch Logs
+    Properties:
+      FunctionName: lmd-csr-attach-role-to-sc-portfolio
+      CodeUri: ./src
+      Policies:
+      - Statement:
+        - Sid: Permissions
+          Effect: Allow
+          Action:
+          - iam:ListRoles
+          - iam:GetRole
+          - iam:ListAttachedRolePolicies
+          - servicecatalog:AssociatePrincipalWithPortfolio
+          - servicecatalog:List*
+          - servicecatalog:DisassociateProductFromPortfolio
+          Resource: '*'
+  AttachLayer:
+    Type: Custom::LayerAttachment
+    Properties:
+      LayerName: lyr-csr-common
+      LambdaName: !Ref LambdaFunction
+      #CloudFormation will not execute the custom resource if no properties are changed.
+      #Along with the parameter, this ensures that the resource is called each time CloudFormation runs
+      Nonce: !Ref Nonce
+      ServiceToken: !ImportValue CFNAttachLambdaLayer
+Outputs:
+  LambdaFunctionArn:
+    Description: "Custom Resource that attaches a list of roles to a Service Catalog Portfolio based on attached policies"
+    Value: !GetAtt LambdaFunction.Arn
+    Export:
+      Name: CFNAttachRolesToPortfolio

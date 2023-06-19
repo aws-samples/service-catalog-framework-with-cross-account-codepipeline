@@ -1,0 +1,21 @@
+
+{
+    "Configuration":[
+    {
+        "Key": "TargetAccount",
+        "Value": "${TargetAccount}",
+        "CreateTag":false
+        
+    },
+    {
+        "Key": "Repository",
+        "Value": "${Repository}" 
+    },
+    {
+        "Key": "Branch",
+        "Value": "${Branch}" 
+    }
+
+
+]
+}

@@ -1,0 +1,69 @@
+Parameters:
+  Repository:
+    Type: String
+    Description: Name of the Repository
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  Branch:
+    Type: String
+    Description: The git branch that should trigger the repository
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  Stage:
+    Type: String
+    Description: The stage where this project belongs
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  BuildProjectRole:
+    Type: String
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  BuildSpec:
+    Type: String
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+  TargetAccount:
+    Type: String
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
+Resources:
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "x-acct-${Repository}-${Branch}-${Stage}"
+      Description: !Ref Repository
+      ServiceRole: !Ref BuildProjectRole
+      TimeoutInMinutes: 120
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        PrivilegedMode: True
+        EnvironmentVariables:
+          - Name: Repository
+            Type: PLAINTEXT
+            Value: !Ref Repository
+          - Name: Branch
+            Type: PLAINTEXT
+            Value: !Ref Branch
+          - Name: Stage
+            Type: PLAINTEXT
+            Value: !Ref Stage
+          - Name: TargetAccount
+            Type: PLAINTEXT
+            Value: !Ref TargetAccount
+          - Name: Role
+            Value: !Ref BuildProjectRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Ref BuildSpec
+      Tags:
+        - Key: Name
+          Value: !Ref Repository
+
+
+Outputs:
+  BuildProject:
+    Value: !Ref BuildProject

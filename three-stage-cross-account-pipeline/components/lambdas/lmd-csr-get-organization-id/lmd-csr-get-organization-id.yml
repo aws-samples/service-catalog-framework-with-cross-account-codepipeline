@@ -1,0 +1,50 @@
+Transform: AWS::Serverless-2016-10-31
+Description: > 
+  Creates a CloudFormation custom resource used to retrieve properties of a Cloud9 instance.
+
+Globals:
+  Function:
+    Runtime: python3.7
+    Timeout: 180
+    Handler: index.lambda_handler
+
+Parameters:
+  Nonce:
+    Type: String
+    Description: Forces custom resource to run everytime CF runs -- pass in a $RANDOM as a parameter
+
+Resources:
+  AttachLayer:
+    Type: Custom::LayerAttachment
+    Properties:
+      LayerName: lyr-csr-common
+      LambdaName: !Ref LambdaFunction
+      #CloudFormation will not execute the custom resource if no properties are changed.
+      #Along with the parameter, this ensures that the resource is called each time CloudFormation runs
+      Nonce: !Ref Nonce
+      ServiceToken: !ImportValue CFNAttachLambdaLayer
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "There is only one organization for an account.  This function needs to be able to retrieve information about the organization"
+          - id: W89
+            reason: Lambda function does not need to be in a VPC
+    Properties:
+      FunctionName: lmd-csr-get-organization-id
+      Description: CloudFormation custom resource to return the OrganizationId
+      CodeUri: ./src
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - 'organizations:DescribeOrganization'
+          Resource: '*'
+Outputs:
+  LambdaFunctionArn:
+    Description: "Custom Resource to retrieve the Organization Id"
+    Value: !GetAtt LambdaFunction.Arn
+    Export:
+      Name: CFNGetOrganizationId

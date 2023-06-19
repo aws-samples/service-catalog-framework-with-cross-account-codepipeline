@@ -1,0 +1,32 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - npm install -g cfn-include
+      - export SAM_CLI_TELEMETRY=0
+      - pip3 install cfn_flip
+  pre_build:
+    commands:
+      - # Tags are added to the CodeBuild project via the tag options when deploying through
+      - # the Service Catalog.  This will create bash environment variables for each tag on the
+      - # project.  The environment variables can be used with the "replace-env-vars" script
+      - # to create parameters and tags
+      - source scripts/export-tags-to-env-vars.sh
+  build:
+    commands:
+      - export BASEDIR=$CODEBUILD_SRC_DIR
+      - export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $(aws sts assume-role --role-arn arn:aws:iam::$TargetAccount:role/$Role --role-session-name codebuild --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"  --output text))
+      - CurrentAccount=$(aws sts get-caller-identity  | jq -r ".Account") 
+      - |
+         if [ "$TargetAccount" != "$CurrentAccount" ]
+         then 
+            echo "Error when assuming role";
+            exit -1
+         fi
+      - echo "Current Directory $(pwd)"
+      - bash deploy.sh
+artifacts:
+  files:
+    - '**/*'

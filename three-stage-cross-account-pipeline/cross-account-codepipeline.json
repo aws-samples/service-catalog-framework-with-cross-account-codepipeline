@@ -1,0 +1,53 @@
+
+{
+    "Configuration":[
+    {
+        "Key": "PortfolioId",
+        "Value": "${CF_OUT_ServiceCatalogPortfolio}",
+        "ParameterGroup":"ServiceCatalog"
+    },
+    {
+        "Key": "ProductName",
+        "SCProductDescription":"${SCProductDescription}",
+        "Value":"${ProductName}",
+        "Default": "Cross Account Three stage AWS CodePipeline",
+        "ParameterGroup":"ServiceCatalog"
+    },
+    {
+        "Key": "ProductOwner",
+        "Value": "${ProductOwner}",
+        "Default":"ACME Co.",
+        "ParameterGroup":"ServiceCatalog"
+
+    },
+    {
+        "Key":"ProductDescription",
+        "Value":"${ProductDescription}",
+        "Default":"Deploys a three stage CodePipeline",
+        "ParameterGroup":"ServiceCatalog"
+    },
+    {
+        "Key":"ProductUrl",
+        "Value":"${ProductUrl}",
+        "ParameterGroup":"ServiceCatalog"
+    },
+    {
+        "Key":"ProvisioningArtifactDescriptionParameter",
+        "Value":"${ProvisioningArtifactDescriptionParameter}",
+        "Default":"Three Stage Codepipeline",
+        "ParameterGroup":"ServiceCatalog"
+    },
+    {
+        "Key":"VersionDescription",
+        "Value":"${VersionDescription}",
+        "ParameterGroup":"ServiceCatalog"       
+    },
+    {
+        "Key":"ServiceCatalogRoleName",
+        "Value":"${ServiceCatalogRoleName}",
+        "ParameterGroup":"ServiceCatalog"       
+    }
+
+
+]
+}
