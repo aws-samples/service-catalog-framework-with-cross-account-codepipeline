@@ -46,7 +46,6 @@ bash deploy.sh
 
 #### Prerequisites
 
- ]
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/prerequisites.html) 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) When deploying locally instead of using CloudShell, the deployment script uses Docker to build the Lambdas with the proper dependencies.
