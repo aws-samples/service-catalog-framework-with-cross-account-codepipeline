@@ -18,7 +18,7 @@ This Git repository contains a Java sample application that uses Spring Boot to 
 ```bash
 .
 ├── README.md                               -- This file
-├── buildspec-fargate.yaml                  -- used for the CodeBuild Deployment phase
+├── buildspec.yaml                          -- used for the CodeBuild Deployment phase
 ├── buildspec-integration.yaml              -- used for the CodeBuild integration phase
 ├── components
 │   ├── deploy-subdirectory-templates.sh    -- iterates through the child folders and deploys templates

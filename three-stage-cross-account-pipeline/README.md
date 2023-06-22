@@ -17,7 +17,7 @@ Once provisioned, this CodePipeline automatically runs when code is pushed to it
 
 [AWS CodeBuild](https://aws.amazon.com/codebuild/) is a fully managed continuous integration service that compiles source code, runs tests, and produces ready-to-deploy software packages.
 
-Your repository needs to have a [buildspec](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html) with a list of commands to run. A sample buildspec file is in included for both the [integration phase](./buildspec-integration.yaml) and the [deployment phase](./buildspec.yaml).
+Your repository needs to have a [buildspec](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html) with a list of commands to run. A sample buildspec file is in included for both the [integration phase](../buildspec-integration.yaml) and the [deployment phase](../buildspec.yaml).
 
 ## Service Catalog Portfolios and Products
 
