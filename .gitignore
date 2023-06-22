@@ -5,3 +5,4 @@
 .DS_Store
 components/lambdas/warnings.txt
 **/template.yaml
+ecs-fargate-sample/docker-rest-api/target/*

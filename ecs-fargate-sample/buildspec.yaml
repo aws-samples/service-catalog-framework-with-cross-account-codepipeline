@@ -1,0 +1,52 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - npm install -g cfn-include
+      - export SAM_CLI_TELEMETRY=0
+      - pip3 install cfn_flip
+  build:
+    commands:
+      - source $CODEBUILD_SRC_DIR/fargate-envs.sh
+      - export BASEDIR=$CODEBUILD_SRC_DIR
+      - export FrameworkScriptsDir=$(pwd)/scripts
+      - export ScriptsDir=$BASEDIR/scripts
+      - export TagFile=$BASEDIR/configuration/tag-options.json
+      - export AccountId=$(aws sts get-caller-identity  | jq -r ".Account") 
+      - ## Create the environment variables.  You can have a different shell script depending on the environment
+      - ## with a different buildspec 
+      - source fargate-envs.sh
+      - ## builds the container
+      - bash build.sh
+      - docker tag $ContainerName $AccountId.dkr.ecr.$AWS_REGION.amazonaws.com/$Repository:$ContainerName-$Tag
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AccountId.dkr.ecr.$AWS_REGION.amazonaws.com
+      - docker push $AccountId.dkr.ecr.$AWS_REGION.amazonaws.com/$Repository:$ContainerName-$Tag
+      - # Assume a role in the target account
+      - export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $(aws sts assume-role --role-arn arn:aws:iam::$TargetAccount:role/$Role --role-session-name codebuild --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"  --output text))
+      - # Verify that the assume role worked
+      - CurrentAccount=$(aws sts get-caller-identity  | jq -r ".Account") 
+      - |
+         if [ "$TargetAccount" != "$CurrentAccount" ]
+         then 
+            echo "Error when assuming role";
+            exit -1
+         fi
+      - echo "Current Directory $(pwd)"
+
+      - export Image=$ContainerName-$Tag
+      - pushd $BASEDIR/components
+      - bash deploy.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+

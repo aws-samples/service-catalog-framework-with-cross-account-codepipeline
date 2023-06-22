@@ -1,0 +1,74 @@
+{
+    "Configuration": [
+        {
+            "Key":"StackName",
+            "Value":"${FargateStackName}",
+            "Description":"This is the name of the Stack.  Ugly hack."
+        },
+        {
+            "Key": "VPC",
+            "Value": "${VPC}"
+        },
+        {
+            "Key": "SubnetA",
+            "Value": "${SubnetA}"
+        },
+        {
+            "Key": "SubnetB",
+            "Value": "${SubnetB}"
+        },
+        {
+            "Key": "Registry",
+            "Value": "${Registry}"
+        },
+        {
+            "Key": "Image",
+            "Value": "${Image}"
+        },
+        {
+            "Key": "ServiceName",
+            "Value": "${ServiceName}"
+        },
+        {
+            "Key": "ContainerPort",
+            "Value": "${ContainerPort}"
+        },
+        {
+            "Key": "LoadBalancerPort",
+            "Value": "${LoadBalancerPort}"
+        },       
+        {
+            "Key": "HealthCheckPath",
+            "Value": "${HealthCheckPath}"
+        },
+        {
+            "Key": "HostedZoneName",
+            "Value": "${HostedZoneName}"
+        },
+        {
+            "Key": "Subdomain",
+            "Value": "${Subdomain}"
+        },
+        {
+            "Key": "MinContainers",
+            "Value": "${MinContainers}"
+        },
+        {
+            "Key": "MaxContainers",
+            "Value": "${MaxContainers}"
+        },       
+        {
+            "Key": "AutoScalingTargetValue",
+            "Value": "${AutoScalingTargetValue}"
+        },
+        {
+            "Key": "Repository",
+            "Value": "${Repository}"
+        },
+        {
+            "Key": "CPUMemory",
+            "Value": "${CPUMemory}"
+        }
+        
+    ]
+}
