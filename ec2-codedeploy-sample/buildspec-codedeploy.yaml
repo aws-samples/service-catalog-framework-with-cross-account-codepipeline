@@ -1,0 +1,45 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - npm install -g cfn-include
+      - export SAM_CLI_TELEMETRY=0
+      - pip3 install cfn_flip
+  build:
+    commands:
+      - export BASEDIR=$CODEBUILD_SRC_DIR
+      - export FrameworkScriptsDir=$(pwd)/scripts
+      - export ScriptsDir=$BASEDIR/scripts
+      - # Assume a role in the target account
+      - export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $(aws sts assume-role --role-arn arn:aws:iam::$TargetAccount:role/$Role --role-session-name codebuild --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"  --output text))
+      - # Verify that the assume role worked
+      - CurrentAccount=$(aws sts get-caller-identity  | jq -r ".Account") 
+      - |
+         if [ "$TargetAccount" != "$CurrentAccount" ]
+         then 
+            echo "Error when assuming role";
+            exit -1
+         fi
+      - echo "Current Directory $(pwd)"
+      - # Retrieve values from the deployed CloudFormation stacks and 
+      - # create bash shell variables in the form of $CF_OUT_{Export Name}
+      - export $(aws cloudformation describe-stacks  --stack-name codedeploy-source-bucket --output text --query 'Stacks[0].Outputs[].join(`=`, [join(`_`, [`CF`, `OUT`, OutputKey]), OutputValue ])')
+      - export S3Bucket=$CF_OUT_CodeDeploySourceBucket
+      - export $(aws cloudformation describe-stacks  --stack-name codedeploy --output text --query 'Stacks[0].Outputs[].join(`=`, [join(`_`, [`CF`, `OUT`, OutputKey]), OutputValue ])')
+      -
+      - # TODO: Build your artifact here
+      - # The start-deployment script requires three parameters
+      - # 1. The S3 Bucket containing your artifacts to be deployed
+      - # 2. The directory containing the artifacts to be deployed
+      - # 3. The name of the CodeDeploy application
+      - # 4. The DeploymentGroup
+      - 
+      -
+      - # In this buildspec file, all of the parameters except for the third one
+      - # Are obtained from the Export section of deployed stacks.
+      - bash $ScriptsDir/start-deployment.sh $S3Bucket $BASEDIR/SampleApp_Linux "$CF_OUT_CodeDeployApplication" "$CF_OUT_CodeDeployDeploymentGroup"  
+artifacts:
+  files:
+    - '**/*'

@@ -1,0 +1,19 @@
+
+{
+    "Configuration":[
+    {
+        "Key": "DevOpsAccount",
+        "Value": "${DevOpsAccount}",
+        "CreateTag":false
+        
+    },
+    {
+        "Key": "RoleName",
+        "Value": "${RoleName}",
+        "CreateTag":false
+        
+    }
+
+
+]
+}

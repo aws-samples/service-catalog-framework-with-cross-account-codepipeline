@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cross Account CodePipeline Service Catalog Product
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+ DevOpsAccount:
+    Type: String
+    AllowedPattern: \d{12}
+    Description: Enter the AWS Account ID of the external account that will assume this role.
+ RoleName:
+    Type: String
+    Description: Name of the role to be assumed.  It must start with "codebuild-"
+    AllowedPattern: "^codebuild-.*"
+    ConstraintDescription: Rolename must start with "codebuild-"
+
+
+
+Resources:
+  CodeBuildRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Ref RoleName
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+          - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+          - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+          - arn:aws:iam::aws:policy/AWSServiceCatalogAdminFullAccess
+          - arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: Allow
+              Principal:
+                AWS: !Sub "arn:aws:iam::${DevOpsAccount}:root"
+              Action:
+                - sts:AssumeRole
+              Condition:
+                StringLike:
+                  "aws:PrincipalArn": !Sub "arn:aws:iam::${DevOpsAccount}:role/codebuild-*"
+            -
+              Effect: Allow
+              Principal:
+                Service:
+                  - codebuild.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: /
+  CodeBuildPolicy:
+    Metadata:
+          cfn_nag:
+              rules_to_suppress:
+                - id: F4
+                  reason: This policy needs to be able to create a Role for Lambdas with the needed policies.
+                - id: W12
+                  reason: This policy needs to be able to create a Role for Lambdas with the needed policies.
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub CodeBuildPolicy-${AWS::Region}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -  
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource:  !Sub "arn:aws:iam::*:role/codebuild-*"
+          - 
+            Effect: Allow
+            Action: 
+              - iam:PutRolePolicy
+              - iam:CreateRole
+            Resource: 
+            - "*"
+          - 
+            Effect: Allow
+            Action: 
+              - sns:*
+            Resource: 
+            - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:codepipeline-role-*
+          - 
+            Effect: Allow
+            Action: 
+              - s3:*
+            Resource: 
+              - !Sub "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket*/*"
+              - !Sub "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket*"
+              - !Join 
+                - ''
+                - - "arn:aws:s3:::"
+                  - !ImportValue codedeploy-source-bucket
+                  - "/*"
+              - !Join 
+                - ''
+                - - "arn:aws:s3:::"
+                  - !ImportValue codedeploy-source-bucket
+              
+      Roles:
+        -
+          !Ref CodeBuildRole
+Outputs:
+  CodeBuildRole:
+    Description: Cross Account Code Build Role
+    Value: !Ref CodeBuildRole
+    Export:
+        Name: codebuild-role

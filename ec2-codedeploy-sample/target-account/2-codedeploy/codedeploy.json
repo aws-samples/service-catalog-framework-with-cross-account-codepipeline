@@ -1,0 +1,17 @@
+{
+    "Configuration": [
+
+        {
+            "Key": "ApplicationName",
+            "Value": "${ApplicationName}"
+        },
+        {
+            "Key": "EC2TagKey",
+            "Value": "${EC2TagKey}"
+        },
+        {
+            "Key": "EC2TagValue",
+            "Value": "${EC2TagValue}"
+        }
+    ]
+}
