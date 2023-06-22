@@ -23,6 +23,12 @@ Parameters:
     Type: String
     Description: Build specification file
     Default: buildspec.yaml
+  TargetAccountRole:
+    Type: String
+    Description: Name of the role to be assumed.  It must start with "codebuild-"
+    AllowedPattern: "^codebuild-.*"
+    ConstraintDescription: Rolename must start with "codebuild-"
+  
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -37,6 +43,7 @@ Metadata:
         default: Target
       Parameters:
       - TargetAccount
+      - TargetAccountRole
 Resources:
   CodeBuildIntegrationProject:
     Type: 'AWS::CloudFormation::Stack'
@@ -48,6 +55,7 @@ Resources:
         BuildProjectRole: !ImportValue  codebuild-role
         Stage: Integration
         TargetAccount: !Ref TargetAccount
+        TargetRole: !Ref TargetAccountRole
       TemplateURL: ./codebuild-project.yml
       TimeoutInMinutes: '60'
 
@@ -60,6 +68,7 @@ Resources:
         BuildSpec: !Ref DeploymentBuildSpec
         BuildProjectRole: !ImportValue  codebuild-role
         TargetAccount: !Ref TargetAccount
+        TargetRole: !Ref TargetAccountRole
         Stage: Build
       TemplateURL: ./codebuild-project.yml
       TimeoutInMinutes: '60'
