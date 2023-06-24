@@ -1,9 +1,9 @@
 {
     "Configuration": [
         {
-            "Key":"StackName",
-            "Value":"${FargateStackName}",
-            "Description":"This is the name of the Stack.  Ugly hack."
+            "Key": "StackName",
+            "Value": "${FargateStackName}",
+            "Description": "This is the name of the Stack.  Ugly hack."
         },
         {
             "Key": "VPC",
@@ -36,7 +36,7 @@
         {
             "Key": "LoadBalancerPort",
             "Value": "${LoadBalancerPort}"
-        },       
+        },
         {
             "Key": "HealthCheckPath",
             "Value": "${HealthCheckPath}"
@@ -56,7 +56,7 @@
         {
             "Key": "MaxContainers",
             "Value": "${MaxContainers}"
-        },       
+        },
         {
             "Key": "AutoScalingTargetValue",
             "Value": "${AutoScalingTargetValue}"
@@ -68,7 +68,30 @@
         {
             "Key": "CPUMemory",
             "Value": "${CPUMemory}"
+        },
+        {
+            "Key": "HealthCheckTimeoutSeconds",
+            "Value": "${HealthCheckTimeoutSeconds}"
+        },
+        {
+            "Key": "MinimumHealthyPercent",
+            "Value": "${MinimumHealthyPercent}"
+        },
+        {
+            "Key": "HealthCheckIntervalSeconds",
+            "Value": "${HealthCheckIntervalSeconds}"
+        },
+        {
+            "Key": "HealthCheckGracePeriodSeconds",
+            "Value": "${HealthCheckGracePeriodSeconds}"
+        },
+        {
+            "Key": "DesiredCount",
+            "Value": "${DesiredCount}"
+        },
+        {
+            "Key": "MaximumPercent",
+            "Value": "${MaximumPercent}"
         }
-        
     ]
 }

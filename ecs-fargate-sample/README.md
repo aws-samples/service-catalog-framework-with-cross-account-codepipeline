@@ -92,5 +92,5 @@ popd
 
 - Create an AWS CodePipeline using Service Catalog
 
-![Parameters-1](./images/2023-06-23-19-15-52.png)
-![Parameters-2](./images/2023-06-23-19-14-31.png)
+![Parameters-1](../images/2023-06-23-19-15-52.png)
+![Parameters-2](../images/2023-06-23-19-14-31.png)

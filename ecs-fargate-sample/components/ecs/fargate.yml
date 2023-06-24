@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: An example CloudFormation template for Fargate.
 Parameters:
+
   VPC:
     Type: AWS::EC2::VPC::Id
   SubnetA:
@@ -62,27 +63,21 @@ Parameters:
       - "4096/8GB"
   MinimumHealthyPercent:
     Type: Number
-    Default: 100
     Description: Specifies the lower limit of the number of tasks that must remain running and healthy during a deployment. 
   MaximumPercent:
     Type: Number
-    Default: 100
     Description: Specifies the upper limit of the number of tasks that must remain running and healthy during a deployment. 
   DesiredCount:
     Type: Number
-    Default: 2
     Description: Specifies the number of tasks that you want the service to maintain
   HealthCheckGracePeriodSeconds:
     Type: Number
-    Default: 300
     Description: Specifies the amount of time to allow the tasks in a service to stabilize before the health check system starts evaluating the task's health status.
   HealthCheckIntervalSeconds:
     Type: Number
-    Default: 30
     Description: The amount of time, in seconds, during which no response means a failed health check.
   HealthCheckTimeoutSeconds:
     Type: Number
-    Default: 20
     Description: The amount of time, in seconds, during which no response means a failed health check.
 Metadata:
   AWS::CloudFormation::Interface:
