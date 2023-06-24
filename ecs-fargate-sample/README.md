@@ -18,7 +18,7 @@ This Git repository contains a Java sample application that uses Spring Boot to 
 ```bash
 .
 ├── README.md                               -- This file
-├── buildspec.yaml                          -- used for the CodeBuild Deployment phase
+├── buildspec-fargate.yaml                  -- used for the CodeBuild Deployment phase
 ├── buildspec-integration.yaml              -- used for the CodeBuild integration phase
 ├── components
 │   ├── deploy-subdirectory-templates.sh    -- iterates through the child folders and deploys templates
@@ -68,12 +68,29 @@ The corresponding JSON file is used to map environment variables to CloudFormati
 
 The ```fargate-env.sh``` is used to assign values to the environment variables.
 
-## Usage
+## Deployment
 
+- Launch AWS CloudShell in the *target* account where you want to deploy your code.
 - Modify the ```fargate-envs.sh``` file to contain the variables for your environment.  See the comments in the file for more information.
-- Push the code to the DevOps account.
 - Ensure that the target account has [permission to access ECR in the shared account.](https://repost.aws/knowledge-center/secondary-account-access-ecr)
-- Deploy the [codebuild-fargate,yml](./target-account/codebuild-fargate.yml) CloudFormation template in  the target account.
+
+- Run the following commands:
+
+```bash
+# The Account number to the account containing your CodePipeline
+export DevOpsAccount=1234567890 
+# The name of the role to be assumed by CodeBuild.  It must start with 'codebuild-'
+# Note the name, you will need it later
+export RoleName=codebuild-fargate-role
+
+export FrameworkScriptsDir=$(pwd)/scripts
+export TagFile=$(pwd)/configuration/tag-options.json
+pushd ./target-account
+bash deploy.sh
+popd
+```
+
 - Create an AWS CodePipeline using Service Catalog
 
-![Parameters](./images/2023-06-13-23-33-26.png)
+![Parameters-1](./images/2023-06-23-19-15-52.png)
+![Parameters-2](./images/2023-06-23-19-14-31.png)
