@@ -14,8 +14,7 @@ This will create the necessary AWS CodeDeploy related resources  in the target a
 ```bash
 sudo npm install -g cfn-include
 
-# Use temporary credentials to change to the account containing the git repository
-git clone codecommit::us-east-1://service-catalog-codepipeline-sc-dhhs
+# Clone this repository
 
 # This should be set to the DevOps Account
 export DevOpsAccount=12345678901
@@ -67,10 +66,10 @@ sudo service codedeploy-agent status
 
 ## Launch a CodePipeline product 
 
-- Repository - service-catalog-codepipeline-sc-dhhs
-- Branch - codedeploy
-- IntegrationBuildSpec - ./three-stage-cross-account-pipeline-sc-product/buildspec-integration.yaml
-- DeploymentBuildspec - ./three-stage-cross-account-pipeline-sc-product/buildspec-codedeploy.yaml
+- Repository - <name of your repository>
+- Branch - main
+- IntegrationBuildSpec - ./buildspec-integration.yaml
+- DeploymentBuildspec - ./buildspec.yaml
 
 
 ![Launch product](./images/2023-06-02-16-07-54.png)
