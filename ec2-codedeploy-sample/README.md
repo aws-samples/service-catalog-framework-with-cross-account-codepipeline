@@ -24,8 +24,7 @@ export DevOpsAccount=12345678901
 unset AWS_SESSION_TOKEN
 unset AWS_ACCESS_KEY_ID
 #
-
-cd service-catalog-codepipeline-sc-dhhs
+# change to your directory
 export BASEDIR=$(pwd)
 export FrameworkScriptsDir=$BASEDIR/scripts
 export TagFile=$BASEDIR/configuration/tag-options.json
