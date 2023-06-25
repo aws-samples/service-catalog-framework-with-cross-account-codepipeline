@@ -71,5 +71,3 @@ sudo service codedeploy-agent status
 - DeploymentBuildspec - ./buildspec.yaml
 
 
-![Launch product](./images/2023-06-02-16-07-54.png)
-
