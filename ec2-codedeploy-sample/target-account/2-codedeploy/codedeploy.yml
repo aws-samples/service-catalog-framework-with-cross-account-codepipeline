@@ -1,5 +1,5 @@
 Parameters:
-  ApplicationName:
+  Application:
     Type: String
     Description: Resources will have the ApplicationName appended to them
     MinLength: 1
@@ -18,13 +18,13 @@ Resources:
   CodeDeployApplication: 
     Type: AWS::CodeDeploy::Application
     Properties:
-      ApplicationName: !Ref ApplicationName
+      ApplicationName: !Ref Application
       ComputePlatform: Server
   
   CodeDeployDeploymentConfig:
     Type: AWS::CodeDeploy::DeploymentConfig
     Properties:
-      DeploymentConfigName: !Sub "${ApplicationName}-config"
+      DeploymentConfigName: !Sub "${Application}-config"
       ComputePlatform: Server
       MinimumHealthyHosts: 
         Type: HOST_COUNT
@@ -33,7 +33,7 @@ Resources:
   CodeDeployDeploymentGroup:
     Type: AWS::CodeDeploy::DeploymentGroup
     Properties:
-      DeploymentGroupName: !Sub "${ApplicationName}-DeploymentGroup"
+      DeploymentGroupName: !Sub "${Application}-DeploymentGroup"
       ApplicationName: !Ref CodeDeployApplication
       AutoRollbackConfiguration: 
         Enabled: True
@@ -52,7 +52,7 @@ Resources:
   CodeDeployServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "codedeploy-service-role-${ApplicationName}-${AWS::Region}"
+      RoleName: !Sub "codedeploy-service-role-${Application}-${AWS::Region}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -70,7 +70,7 @@ Resources:
   CodeBuildPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub "codedeploy-service-policy-${ApplicationName}-${AWS::Region}"
+      PolicyName: !Sub "codedeploy-service-policy-${Application}-${AWS::Region}"
       PolicyDocument:
         Version: "2012-10-17"
         Statement:

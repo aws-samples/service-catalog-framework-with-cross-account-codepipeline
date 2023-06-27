@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.7
+      python: 3.9
     commands:
       # - echo "install"
       # - pip3 install git-remote-codecommit
@@ -16,6 +16,7 @@ phases:
     commands:
       - export ScriptsDir=$(pwd)/scripts
       - export ConfigFilePath=$CODEBUILD_SRC_DIR/common/config/config.json
+  
   build:
     commands:
       - # Your automated tests here

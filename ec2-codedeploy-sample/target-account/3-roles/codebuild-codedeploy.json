@@ -8,12 +8,13 @@
         
     },
     {
-        "Key": "RoleName",
-        "Value": "${RoleName}",
-        "CreateTag":false
-        
+        "Key": "Application",
+        "Value": "${Application}" 
+    },
+    {
+        "Key": "Environment",
+        "Value": "${Environment}" 
     }
-
 
 ]
 }

@@ -7,24 +7,17 @@ Parameters:
     Type: String
     AllowedPattern: \d{12}
     Description: Enter the AWS Account ID of the external account that will assume this role.
- RoleName:
+ Application:
     Type: String
-    Description: Name of the role to be assumed.  It must start with "codebuild-"
-    AllowedPattern: "^codebuild-.*"
-    ConstraintDescription: Rolename must start with "codebuild-"
-
-
+ Environment:
+    Type: String
 
 Resources:
   CodeBuildRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Ref RoleName
+        RoleName: !Sub "codebuild-${Application}-${Environment}-${AWS::Region}"
         ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
-          - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
-          - arn:aws:iam::aws:policy/AWSLambda_FullAccess
-          - arn:aws:iam::aws:policy/AWSServiceCatalogAdminFullAccess
           - arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
@@ -60,40 +53,25 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          -  
-            Effect: Allow
-            Action:
-              - sts:AssumeRole
-            Resource:  !Sub "arn:aws:iam::*:role/codebuild-*"
-          - 
-            Effect: Allow
-            Action: 
-              - iam:PutRolePolicy
-              - iam:CreateRole
-            Resource: 
-            - "*"
-          - 
-            Effect: Allow
-            Action: 
-              - sns:*
-            Resource: 
-            - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:codepipeline-role-*
           - 
             Effect: Allow
             Action: 
               - s3:*
             Resource: 
-              - !Sub "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket*/*"
-              - !Sub "arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket*"
               - !Join 
                 - ''
                 - - "arn:aws:s3:::"
-                  - !ImportValue codedeploy-source-bucket
+                  - !ImportValue CodeDeploySourceBucket
                   - "/*"
               - !Join 
                 - ''
                 - - "arn:aws:s3:::"
-                  - !ImportValue codedeploy-source-bucket
+                  - !ImportValue CodeDeploySourceBucket
+          - 
+            Effect: Allow
+            Action:
+              - cloudformation:DescribeStacks
+            Resource: "*"
               
       Roles:
         -
@@ -102,5 +80,3 @@ Outputs:
   CodeBuildRole:
     Description: Cross Account Code Build Role
     Value: !Ref CodeBuildRole
-    Export:
-        Name: codebuild-role

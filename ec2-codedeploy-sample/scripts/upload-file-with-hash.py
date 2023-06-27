@@ -59,7 +59,7 @@ try:
     if(s3_md5 is None or (local_md5 != s3_md5)):
         s3_client.upload_file(args.file_name, args.bucket_name, s3_key)
 
-    print(f"https://{args.bucket_name}.s3.amazonaws.com/{s3_key}")
+    print(s3_key)
 except Exception as e:
     print(e)
     exit(-1)

@@ -2,8 +2,8 @@
     "Configuration": [
 
         {
-            "Key": "ApplicationName",
-            "Value": "${ApplicationName}"
+            "Key": "Application",
+            "Value": "${Application}"
         },
         {
             "Key": "EC2TagKey",
@@ -12,6 +12,10 @@
         {
             "Key": "EC2TagValue",
             "Value": "${EC2TagValue}"
+        },
+        {
+            "Key":"StackName",
+            "Value":"codedeploy-${Application}"
         }
     ]
 }

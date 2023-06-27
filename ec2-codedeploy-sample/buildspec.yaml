@@ -1,8 +1,6 @@
 version: 0.2
 phases:
   install:
-    runtime-versions:
-      python: 3.7
     commands:
       - npm install -g cfn-include
       - export SAM_CLI_TELEMETRY=0
@@ -27,9 +25,10 @@ phases:
       - # create bash shell variables in the form of $CF_OUT_{Export Name}
       - export $(aws cloudformation describe-stacks  --stack-name codedeploy-source-bucket --output text --query 'Stacks[0].Outputs[].join(`=`, [join(`_`, [`CF`, `OUT`, OutputKey]), OutputValue ])')
       - export S3Bucket=$CF_OUT_CodeDeploySourceBucket
-      - export $(aws cloudformation describe-stacks  --stack-name codedeploy --output text --query 'Stacks[0].Outputs[].join(`=`, [join(`_`, [`CF`, `OUT`, OutputKey]), OutputValue ])')
+      - export $(aws cloudformation describe-stacks  --stack-name codedeploy-$Application --output text --query 'Stacks[0].Outputs[].join(`=`, [join(`_`, [`CF`, `OUT`, OutputKey]), OutputValue ])')
       -
       - # TODO: Build your artifact here
+      - bash build.sh
       - # The start-deployment script requires three parameters
       - # 1. The S3 Bucket containing your artifacts to be deployed
       - # 2. The directory containing the artifacts to be deployed

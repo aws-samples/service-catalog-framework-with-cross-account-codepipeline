@@ -20,6 +20,6 @@ for dir in  */; do \
         for template in $templates; do
             echo "bash ../deploy-template.sh ${template}"
             pwd
-            bash ../deploy-template.sh ${template}
+            bash ./deploy-template.sh ${template}
         done
 done
