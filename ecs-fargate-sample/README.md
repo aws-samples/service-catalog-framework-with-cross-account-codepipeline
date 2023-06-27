@@ -92,5 +92,45 @@ popd
 
 - Create an AWS CodePipeline using Service Catalog
 
-![Parameters-1](../images/2023-06-23-19-15-52.png)
-![Parameters-2](../images/2023-06-23-19-14-31.png)
+![Parameters-1](./images/2023-06-23-19-15-52.png)
+![Parameters-2](./images/2023-06-23-19-14-31.png)
+
+## Modifying your repository to work with the Fargate based cross account AWS CodePipeline
+
+### Copy the necessary files to the root directory of your  repository:
+
+1. ```./components```
+2. ```./scripts``` folder -  contains helper scripts used for building and deploying files.
+3. ```./buildspec-integration.yaml``` - used in the ```AWS CodeBuild integration phase```.  Run your automated tests and static code analysis tools here.
+4. ```./buildspec.yaml``` - used in the ```AWS CodeBuild Deployment Phase``` to build and deploy your code to the target account.
+5. ```./build.sh``` - builds the Docker container
+6. ```./fargate-envs.sh``` - contains environment variables that map to the Fargate CloudFormation template used for deployment
+
+### Modify the necessary files
+
+#### Buildspec file modifications
+
+Add static code analysis and automated test commands to the  ```buildspec-integration.yaml``` file.
+
+The ```buildspec.yaml``` file is generic.  Environment specific values are controlled by environment variables.
+You can load environment specific variables by changing this line:
+
+````bash
+      - source $CODEBUILD_SRC_DIR/fargate-envs.sh
+````
+
+To this:
+
+```bash 
+      - source $CODEBUILD_SRC_DIR/fargate-envs-$Environment.sh
+```
+
+and adding environment specific shell scripts.  The $Environment variable is predefined when using the
+Service Catalog product to create the CodePipeline.
+
+
+#### Modify the build.sh file.
+
+Modify the ```build.sh``` shell script to build any artifacts your deployment needs.
+
+

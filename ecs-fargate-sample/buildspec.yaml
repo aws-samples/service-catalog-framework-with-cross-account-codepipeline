@@ -13,6 +13,9 @@ phases:
       - export ScriptsDir=$BASEDIR/scripts
       - export TagFile=$BASEDIR/configuration/tag-options.json
       - export AccountId=$(aws sts get-caller-identity  | jq -r ".Account") 
+      - ## Create the environment variables.  You can have a different shell script depending on the environment
+      - ## with a different buildspec 
+      - source fargate-envs.sh
       - ## builds the container
       - bash build.sh
       - docker tag $ContainerName $AccountId.dkr.ecr.$AWS_REGION.amazonaws.com/$Repository:$ContainerName-$Tag
