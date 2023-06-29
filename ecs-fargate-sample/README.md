@@ -133,4 +133,8 @@ Service Catalog product to create the CodePipeline.
 
 Modify the ```build.sh``` shell script to build any artifacts your deployment needs.
 
+#### Working with test reporting in AWS CodeBuild
+
+Please see the [included documentation](./TEST-REPORTS.md) for information about integrating automated tests.
+
 
