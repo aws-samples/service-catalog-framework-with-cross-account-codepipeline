@@ -1,5 +1,31 @@
 # Service Catalog CodePipeline product
 
+## Features
+
+The AWS Cross Account CodePipeline Service Catalog Product provides a number of features:
+
+### An opinionated standardized directory structure
+
+The Service Catalog Framework, the AWS CodePipeline product and the sample serverless [Elastic Container Service](https://aws.amazon.com/ecs/) [AWS Fargate](https://aws.amazon.com/fargate/) [repository](../ecs-fargate-sample/) all provide a standardize directory structure and helper scripts to ease deployment.
+
+The directory structure is based on "components" with subdirectories for the individual components that your deployment needs like S3 buckets, Lambdas and roles.  When your CloudFormation templates are placed in this structure they automatically are scanned with static analysis tools and deployed with [AWS SAM](https://aws.amazon.com/serverless/sam/).
+
+### Automatic static analysis tool scanning
+
+All CloudFormation templates are scanned with [CFN Lint](https://github.com/aws-cloudformation/cfn-lint) and [CFN Nag](https://github.com/stelligent/cfn_nag).
+
+Python based Lambda functions are also scanned with [Bandit](https://bandit.readthedocs.io/en/latest/).
+
+### Configurable CloudFormation parameter overrides
+
+Each of your CloudFormation templates can have a corresponding [json file](../configuration/tag-options.json) that maps environment variables to CloudFormation parameters.  This allows you to give your templates a separate set of values depending on the target deployment environment.
+
+See the accompanying [documentation](../scripts/convert-config-to-kv-pairs.md) for more information.
+
+### Support for consistent tagging of all deployed applications
+
+You can specify a [configuration file](../configuration/tag-options.json) that tells the build process how the deployed resources should be [tagged](https://docs.aws.amazon.com/tag-editor/latest/userguide/tagging.html).  The values for the tags can either be hard coded or map to environment variables.
+
 ## What is CodePipeline?
 
 [AWS CodePipeline](https://aws.amazon.com/codepipeline/) is a fully managed continuous delivery service that helps you automate your release pipelines for fast and reliable application and infrastructure updates.
