@@ -7,13 +7,17 @@
 
 ## The Cross Account CodePipeline Product
 
+![CodePipeline](./images/CodePipeline.png)
+
 Once provisioned, this CodePipeline automatically runs when code is pushed to its source [CodeCommit](https://aws.amazon.com/codecommit/) repository.  It contains three stages after the source code is retrieved.
 
-![Three Stage CodePipeline](./images/2023-03-31-14-54-41.png)
 
 1. **CodeBuild Integration Phase**.  Here you can run any automated tests and static code scanning tools
 2. **Deployment Approval**. This allows a Release Manager to either approve or reject the deployment based on the results of the Integration phase. 
 3. **CodeBuild Deployment Phase**. This phase is meant to allow you to run any necessary commands to deploy your code. AWS CodeBuild, based on the buildspec file, will assume a role in the target account to allow for cross account deployments.
+
+![Three Stage CodePipeline](./images/2023-03-31-14-54-41.png)
+
 
 [AWS CodeBuild](https://aws.amazon.com/codebuild/) is a fully managed continuous integration service that compiles source code, runs tests, and produces ready-to-deploy software packages.
 
@@ -55,8 +59,8 @@ For a general overview about the user experience for Service Catalog, please see
 
 Two IAM Roles are deployed
 
-- [x-acct-codepipeline-role-${AWS::Region}](./components/codepipeline/simple-codepipeline.yml) -- the role used by [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
-- [x-acct-cbd-${Repository}-${Branch}-${AWS::Region}](./components/codepipeline/simple-codepipeline.yml) -- the role used by [AWS CodeBuild](https://aws.amazon.com/codebuild/).  This role should be modified and given the necessary permissions to do the deployment.  Currently it has the permissions needed to deploy this repository. This role will also be deployed to the target account with a [Trust Policy](https://aws.amazon.com/blogs/security/how-to-use-trust-policies-with-iam-roles/)
+- [codebuild-codepipeline-role-${AWS::Region}](./components/codepipeline/simple-codepipeline.yml) -- the role used by [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
+
 
 ### AWS EventBridge
 
