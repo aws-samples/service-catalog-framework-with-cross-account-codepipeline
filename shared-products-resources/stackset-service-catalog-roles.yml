@@ -1,0 +1,63 @@
+# (c) 2022 Amazon Web Services, Inc. or its affiliates. All Rights Reserved. This AWS Content is provided subject to the terms of the AWS Customer  
+# Agreement available at https://aws.amazon.com/agreement/ or other written agreement between Customer and Amazon Web Services, Inc. 
+# TODO:
+# Support Organization
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a Service Catalog Role'
+
+Resources:
+  ServiceCatalogUserRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        RoleName: !Sub "ServiceCatalogUserRole-${AWS::Region}"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - 'sts:AssumeRole'
+              Effect: Allow
+              Principal:
+                AWS:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+          - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+  ServiceCatalogCloudFormationRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        RoleName: !Sub "ServiceCatalogCloudFormationRole-${AWS::Region}"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - 'sts:AssumeRole'
+              Effect: Allow
+              Principal:
+                Service:
+                  - servicecatalog.amazonaws.com
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+          - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+          - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+          - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+          - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+          - arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess
+        Policies:
+          - PolicyName: IAMPolicy
+            PolicyDocument:
+              Statement:
+                - Action:
+                    - iam:PassRole
+                    - iam:CreateRole
+                    - iam:PutRolePolicy
+                    - iam:DeleteRole
+                    - iam:DeleteRolePolicy
+                    - iam:AttachRolePolicy
+                    - iam:DetachRolePolicy
+                  Effect: Allow
+                  Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+Outputs:
+  ServiceCatalogCloudFormationRole:
+     Description: ServiceCatalogUserRole
+     Value: !Ref ServiceCatalogCloudFormationRole
