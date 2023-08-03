@@ -2,12 +2,6 @@
 
 The Service Catalog Framework can be installed via a properly configured [AWS Cloud 9](https://aws.amazon.com/cloud9/) instance.  The AWS Cloud9 instance requires at least 25GB of storage space.  The bash commands below will create an AWS Cloud9 environment in the default VPC.  
 
-## Launching AWS CloudShell
-
-The most straightforward method to run the commands below is via [AWS CloudShell](https://aws.amazon.com/cloudshell/)
-
-Log into the AWS Console and navigate to the AWS Cloudshell service.
-
 
 ## Creating the AWS Cloud9 environment
 
