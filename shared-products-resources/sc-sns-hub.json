@@ -1,0 +1,9 @@
+{
+"Configuration": [
+
+    {
+        "Key": "SpokeAccounts",
+        "Value": "${SpokeAccounts}"
+    }
+]
+}
