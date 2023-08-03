@@ -1,0 +1,16 @@
+{
+    "Configuration": [
+
+        {
+            "Key": "PortfolioProviderName",
+            "Value": "DevOps Department"
+        },
+        {
+            "Key": "PortfolioDescription",
+            "Value": "Adminstration products"
+        },
+        {
+            "Key": "PortfolioDisplayName",
+            "Value": "Administration Products"
+        }   ]
+}
