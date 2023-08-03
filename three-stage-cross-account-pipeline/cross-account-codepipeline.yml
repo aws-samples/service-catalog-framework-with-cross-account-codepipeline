@@ -13,6 +13,10 @@ Parameters:
     Type: String
     Description: Name of the branch that contains the application code.
     Default: main
+  ResourceSuffix:
+    Type: String
+    Description: This will be appended to resource names created by the pipeline
+    MinLength: 1
     AllowedPattern: "^[a-zA-Z0-9_-]+$"
     ConstraintDescription: "Branch name can only contain alphanumeric characters, dash, and underscore."
   IntegrationBuildSpec:
@@ -23,11 +27,25 @@ Parameters:
     Type: String
     Description: Build specification file
     Default: buildspec.yaml
+  CodeBuildImage:
+    Type: String
+    Description: CodeBuild Docker runtime version
+    AllowedValues:
+      - "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+      - "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    Default: "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+    Description: Docker container for the build.  Runtime version support varies by image.  See https://docs.aws.amazon.com/codebuild/latest/userguide/available-runtimes.html
   TargetAccountRole:
     Type: String
     Description: Name of the role to be assumed.  It must start with "codebuild-"
     AllowedPattern: "^codebuild-.*"
     ConstraintDescription: Rolename must start with "codebuild-"
+  Application: 
+    Type: String
+    MinLength: 1
+  Environment: 
+    Type: String
+    MinLength: 1   
   
 Metadata:
   AWS::CloudFormation::Interface:
@@ -39,11 +57,18 @@ Metadata:
       - Branch
       - IntegrationBuildSpec
       - DeploymentBuildSpec 
+      - CodeBuildImage
+      - ResourceSuffix
     - Label:
         default: Target
       Parameters:
       - TargetAccount
       - TargetAccountRole
+    - Label:
+        default: Environment Variables
+      Parameters:
+      - Application
+      - Environment
 Resources:
   CodeBuildIntegrationProject:
     Type: 'AWS::CloudFormation::Stack'
@@ -51,11 +76,15 @@ Resources:
       Parameters:
         Repository: !Ref Repository
         Branch: !Ref Branch
+        ResourceSuffix: !Ref ResourceSuffix
         BuildSpec: !Ref IntegrationBuildSpec
         BuildProjectRole: !ImportValue  codebuild-role
         Stage: Integration
         TargetAccount: !Ref TargetAccount
         TargetRole: !Ref TargetAccountRole
+        Application: !Ref Application
+        Environment: !Ref Environment
+        CodeBuildImage: !Ref CodeBuildImage
       TemplateURL: ./codebuild-project.yml
       TimeoutInMinutes: '60'
 
@@ -65,11 +94,15 @@ Resources:
       Parameters:
         Repository: !Ref Repository
         Branch: !Ref Branch
+        ResourceSuffix: !Ref ResourceSuffix
         BuildSpec: !Ref DeploymentBuildSpec
         BuildProjectRole: !ImportValue  codebuild-role
         TargetAccount: !Ref TargetAccount
         TargetRole: !Ref TargetAccountRole
         Stage: Build
+        Application: !Ref Application
+        Environment: !Ref Environment
+        CodeBuildImage: !Ref CodeBuildImage
       TemplateURL: ./codebuild-project.yml
       TimeoutInMinutes: '60'
 
@@ -80,6 +113,7 @@ Resources:
         Repository: !Ref Repository
         Branch: !Ref Branch
         PipelineName: !Ref Pipeline
+        ResourceSuffix: !Ref ResourceSuffix
       TemplateURL: ./codecommit-event.yml
       TimeoutInMinutes: '60'
 
@@ -87,7 +121,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       RoleArn: !ImportValue x-acct-codepipeline-role
-      Name: !Sub "x-acct-${Repository}-${Branch}"
+      Name: !Sub "${Repository}-${ResourceSuffix}"
       ArtifactStore:
         Type: S3
         Location: !ImportValue x-acct-codepipeline-source-bucket
