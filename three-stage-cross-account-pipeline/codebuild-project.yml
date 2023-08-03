@@ -9,6 +9,11 @@ Parameters:
     Description: The git branch that should trigger the repository
     AllowedPattern: ".+"
     ConstraintDescription: "This is a required parameter"
+  ResourceSuffix:
+    Type: String
+    Description: The git branch that should trigger the repository
+    AllowedPattern: ".+"
+    ConstraintDescription: "This is a required parameter"
   Stage:
     Type: String
     Description: The stage where this project belongs
@@ -22,17 +27,24 @@ Parameters:
     Type: String
     AllowedPattern: ".+"
     ConstraintDescription: "This is a required parameter"
+  CodeBuildImage:
+    Type: String
+    Description: CodeBuild Docker runtime version
   TargetAccount:
     Type: String
     AllowedPattern: ".+"
     ConstraintDescription: "This is a required parameter"
   TargetRole:
     Type: String
+  Application:
+    Type: String
+  Environment:
+    Type: String
 Resources:
   BuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub "x-acct-${Repository}-${Branch}-${Stage}"
+      Name: !Sub "${Repository}-${ResourceSuffix}-${Stage}"
       Description: !Ref Repository
       ServiceRole: !Ref BuildProjectRole
       TimeoutInMinutes: 120
@@ -42,7 +54,7 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         PrivilegedMode: true 
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: !Ref CodeBuildImage
         EnvironmentVariables:
           - Name: Repository
             Type: PLAINTEXT
@@ -57,7 +69,14 @@ Resources:
             Type: PLAINTEXT
             Value: !Ref TargetAccount
           - Name: Role
+            Type: PLAINTEXT
             Value: !Ref TargetRole
+          - Name: Application
+            Type: PLAINTEXT
+            Value: !Ref Application
+          - Name: Environment
+            Type: PLAINTEXT
+            Value: !Ref Environment
       Source:
         Type: CODEPIPELINE
         BuildSpec: !Ref BuildSpec
