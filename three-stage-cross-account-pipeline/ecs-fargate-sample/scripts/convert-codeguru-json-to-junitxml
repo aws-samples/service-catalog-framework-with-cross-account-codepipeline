@@ -1,0 +1,79 @@
+import argparse
+import json
+import xml.etree.ElementTree as ET
+
+def flatten_dict(dictionary, parent_key='', separator='_'):
+    items = []
+    for key, value in dictionary.items():
+        new_key = f"{parent_key}{separator}{key}" if parent_key else key
+        if isinstance(value, dict):
+            items.extend(flatten_dict(value, new_key, separator=separator).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+
+def create_test_suite():
+    test_suites = ET.Element('testsuites')
+    return test_suites
+
+def add_test_case(test_suites, file_path, recommendation_id, description, metadata):
+    test_suite = ET.SubElement(test_suites, 'testsuite')
+    test_case = ET.SubElement(test_suite, 'testcase')
+    test_case.set('name', recommendation_id)
+    test_case.set('classname', file_path)
+    failure = ET.SubElement(test_case, 'failure')
+
+    # Create the message content with description and metadata table
+    message_content = description + '\n\n'
+
+    # Check if metadata is empty
+    if not metadata:
+        message_content += "No metadata available.\n"
+    else:
+        # Flatten the metadata dictionary and add it to the table
+        flattened_metadata = flatten_dict(metadata)
+        metadata_keys = list(flattened_metadata.keys())
+        metadata_values = list(flattened_metadata.values())
+        max_key_length = max(len(key) for key in metadata_keys)
+
+        # Add header row
+        header_row = ' | '.join([key.ljust(max_key_length) for key in metadata_keys])
+        separator_row = '-+-'.join(['-' * max_key_length for _ in metadata_keys])
+        message_content += f"{header_row}\n{separator_row}\n"
+
+        # Add value rows
+        num_rows = 1 if not metadata_values else max(len(value) if isinstance(value, list) else 1 for value in metadata_values)
+        for i in range(num_rows):
+            row_values = [f' {str(flattened_metadata[key][i]).ljust(max_key_length)} ' if isinstance(flattened_metadata[key], list) and i < len(flattened_metadata[key]) else f' {str(flattened_metadata[key]).ljust(max_key_length)} ' for key in metadata_keys]
+            message_content += '|'.join(row_values) + '\n'
+
+    # Set the message content as the text of the failure element
+    failure.text = message_content
+
+def generate_junit_xml(recommendations, output_file):
+    test_suites = create_test_suite()
+
+    for recommendation in recommendations:
+        file_path = recommendation['filePath']
+        recommendation_id = recommendation['recommendationId']
+        description = recommendation['description']
+        metadata = recommendation.get('ruleMetadata', {})
+
+        add_test_case(test_suites, file_path, recommendation_id, description, metadata)
+
+    xml_tree = ET.ElementTree(test_suites)
+    xml_tree.write(output_file, encoding='utf-8', xml_declaration=True)
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate JUnit XML from recommendations.')
+    parser.add_argument('--output-file', help='Output file path for the generated JUnit XML')
+    parser.add_argument('--json-file',help="Input JSON file from CodeGuru")
+    args = parser.parse_args()    
+
+    f=open(args.json_file,"r")
+    recommendations=json.load(f)
+    f.close()
+    generate_junit_xml(recommendations, args.output_file)
+
+if __name__ == '__main__':
+    main()
